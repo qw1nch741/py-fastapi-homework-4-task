@@ -31,8 +31,12 @@ async def test_create_user_profile(e2e_client, e2e_db_session, settings, s3_clie
     assert user, f"User {user_email} should exist!"
 
     login_url = "/api/v1/accounts/login/"
-    login_response = await e2e_client.post(login_url, json={"email": user_email, "password": user_password})
-    assert login_response.status_code == 201, f"Expected 201, got {login_response.status_code}"
+    login_response = await e2e_client.post(
+        login_url, json={"email": user_email, "password": user_password}
+    )
+    assert (
+        login_response.status_code == 201
+    ), f"Expected 201, got {login_response.status_code}"
 
     tokens = login_response.json()
     access_token = tokens["access_token"]
@@ -55,7 +59,9 @@ async def test_create_user_profile(e2e_client, e2e_db_session, settings, s3_clie
     }
 
     profile_response = await e2e_client.post(profile_url, headers=headers, files=files)
-    assert profile_response.status_code == 201, f"Expected 201, got {profile_response.status_code}"
+    assert (
+        profile_response.status_code == 201
+    ), f"Expected 201, got {profile_response.status_code}"
 
     profile_data = profile_response.json()
     assert profile_data["first_name"] == "john"
@@ -66,7 +72,9 @@ async def test_create_user_profile(e2e_client, e2e_db_session, settings, s3_clie
 
     avatar_key = f"avatars/{user.id}_avatar.jpg"
     expected_url = await s3_client.get_file_url(avatar_key)
-    assert profile_data["avatar"] == expected_url, f"Invalid avatar URL: {profile_data['avatar']}"
+    assert (
+        profile_data["avatar"] == expected_url
+    ), f"Invalid avatar URL: {profile_data['avatar']}"
 
     stmt_profile = select(UserProfileModel).where(UserProfileModel.user_id == user.id)
     result_profile = await e2e_db_session.execute(stmt_profile)
@@ -81,11 +89,10 @@ async def test_create_user_profile(e2e_client, e2e_db_session, settings, s3_clie
         "s3",
         endpoint_url=settings.S3_STORAGE_ENDPOINT,
         aws_access_key_id=settings.S3_STORAGE_ACCESS_KEY,
-        aws_secret_access_key=settings.S3_STORAGE_SECRET_KEY
+        aws_secret_access_key=settings.S3_STORAGE_SECRET_KEY,
     ) as s3:
         response = await s3.list_objects_v2(
-            Bucket=settings.S3_BUCKET_NAME,
-            Prefix=avatar_key
+            Bucket=settings.S3_BUCKET_NAME, Prefix=avatar_key
         )
 
     assert "Contents" in response, f"Avatar {avatar_key} was not found in MinIO!"
