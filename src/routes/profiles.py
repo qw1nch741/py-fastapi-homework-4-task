@@ -1,6 +1,4 @@
 from fastapi import Request
-from fastapi import APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
 from fastapi import Form
 from security.interfaces import JWTAuthManagerInterface
@@ -135,7 +133,6 @@ async def profile(
         validate_image(avatar)
 
         await s3_client.upload_file(file_name, file_data)
-        avatar_url = await s3_client.get_file_url(file_name)
 
     except HTTPException:
         # 1. Let explicit HTTP status rules pass through unmutated
