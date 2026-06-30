@@ -126,6 +126,8 @@ async def profile(
         file_data = await avatar.read()
         file_name = f"avatars/{user_id}_avatar.jpg"
 
+        avatar_url = await s3_client.get_file_url(file_name)
+
         if len(file_data) > 1 * 1024 * 1024:
             raise HTTPException(status_code=422, detail="Image size exceeds 1 MB")
 
@@ -169,4 +171,5 @@ async def profile(
     db.add(new_profile)
     await db.commit()
     await db.refresh(new_profile)
+    new_profile.avatar = avatar_url
     return new_profile
